@@ -1,0 +1,60 @@
+# ===========================
+# HireAI — Root .gitignore
+# ===========================
+
+# Maven
+backend/target/
+backend/.mvn/
+!backend/.mvn/wrapper/maven-wrapper.properties
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Spring Boot
+backend/logs/
+backend/*.log
+
+# Node / npm
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker volumes and local upload storage
+docker-volumes/
+postgres-data/
+data/
+storage/
+
+# Test output
+backend/target/surefire-reports/
+backend/target/site/
+coverage/

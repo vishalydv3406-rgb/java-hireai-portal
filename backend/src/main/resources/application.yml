@@ -1,0 +1,183 @@
+# Spring Boot Application Configuration
+# All sensitive values must be set via environment variables
+
+spring:
+  application:
+    name: hireai-backend
+
+  # Database
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/hireai}
+    username: ${DATABASE_USERNAME:hireai}
+    password: ${DATABASE_PASSWORD:hireai_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+        batch_size: 25
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    out-of-order: false
+
+  # Redis (optional)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+
+  # Mail
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # File upload limits
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+
+  # Cache
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+  # Spring AI
+  ai:
+    openai:
+      api-key: ${AI_API_KEY:mock-key}
+      base-url: ${AI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${AI_MODEL:gpt-4o-mini}
+          temperature: 0.3
+          max-tokens: 2000
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:text-embedding-3-small}
+
+# Server
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+  compression:
+    enabled: true
+    mime-types: application/json,text/html,text/plain
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /api/v1/api-docs
+  swagger-ui:
+    path: /api/v1/swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+# App-specific config
+hireai:
+  jwt:
+    secret: ${JWT_SECRET:changeme-minimum-32-chars-for-hs256-algorithm}
+    access-token-expiry-ms: 900000        # 15 min
+    refresh-token-expiry-ms: 604800000    # 7 days
+
+  object-storage:
+    endpoint: ${OBJECT_STORAGE_ENDPOINT:http://localhost:9000}
+    bucket: ${OBJECT_STORAGE_BUCKET:hireai-resumes}
+    access-key: ${OBJECT_STORAGE_ACCESS_KEY:minioadmin}
+    secret-key: ${OBJECT_STORAGE_SECRET_KEY:minioadmin}
+    region: ${OBJECT_STORAGE_REGION:us-east-1}
+
+  ai:
+    provider: ${AI_PROVIDER:mock}         # mock | openai | anthropic
+    mock-enabled: ${AI_MOCK_ENABLED:true}
+    timeout-seconds: 30
+    max-tokens: 2000
+    embedding-dimensions: 1536            # text-embedding-3-small
+    max-resume-chars: 8000
+    max-job-desc-chars: 4000
+
+  security:
+    cors:
+      allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+    rate-limit:
+      login-max-attempts: 5
+      login-window-minutes: 15
+
+  resume:
+    allowed-types:
+      - application/pdf
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    max-size-bytes: 10485760             # 10 MB
+
+  recommendation:
+    weights:
+      skill-match: 0.50
+      experience-match: 0.30
+      semantic-match: 0.20
+
+logging:
+  level:
+    root: INFO
+    com.hireai: DEBUG
+    org.springframework.security: INFO
+    org.springframework.ai: INFO
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"
